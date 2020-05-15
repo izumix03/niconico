@@ -1,36 +1,32 @@
-import { ConfigurationFactory } from 'webpack'
-import path from 'path'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
+import path from 'path'
+import { ConfigurationFactory } from 'webpack'
 
 export const config: ConfigurationFactory = () => {
   return {
     entry: {
-      popup: path.join(__dirname, 'src', 'popup.ts'),
-      content_scripts: path.join(__dirname, 'src', 'content_scripts.ts'),
+      popup: path.join(__dirname, 'src', 'popup.tsx'),
+      contentScripts: path.join(__dirname, 'src', 'contentScripts.ts'),
     },
     output: {
       path: path.join(__dirname, 'dist'),
-      filename: '[name].js'
+      filename: '[name].js',
     },
     module: {
       rules: [
         {
-          test: /.ts$/,
+          test: /.tsx?$/,
           use: 'ts-loader',
-          exclude: '/node_modules/'
-        }
-      ]
+          exclude: '/node_modules/',
+        },
+      ],
     },
     resolve: {
-      extensions: ['.ts', '.js']
+      extensions: ['.ts', '.tsx', '.js', '.json', '.css'],
     },
     devtool: 'cheap-module-source-map',
-    plugins: [
-      new CopyWebpackPlugin([
-        { from: 'public', to: '.' }
-      ])
-    ],
-    mode: 'development'
+    plugins: [new CopyWebpackPlugin([{ from: 'public', to: '.' }])],
+    mode: 'development',
   }
 }
 export default config

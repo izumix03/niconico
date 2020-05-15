@@ -4,4 +4,3 @@
 ```shell script
 npm i
 ```
-

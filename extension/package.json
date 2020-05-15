@@ -4,13 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx webpack-dev-server --content-base dist --mode development",
+    "build": "npx webpack",
+    "lint": "run-p lint:*",
+    "lint:eslint": "npx eslint --ext js,ts,tsx .",
+    "lint:prettier": "prettier -l \"**/*.{json,md,yml}\"",
+    "lint:type": "tsc --noEmit",
+    "fix": "run-p fix:*",
+    "fix:eslint": "npm run lint:eslint -- --fix",
+    "fix:prettier": "npm run lint:prettier -- --write"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@material-ui/core": "^4.9.14",
     "@types/chrome": "0.0.107",
+    "@types/react": "^16.9.35",
+    "@types/react-dom": "^16.9.8",
     "@types/socket.io": "^2.1.4",
+    "axios": "^0.19.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "socket.io": "^2.3.0",
     "webextension-polyfill-ts": "^0.14.0"
   },
@@ -24,6 +38,7 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-simple-import-sort": "^5.0.2",
     "jest": "^25.5.4",
     "npm-run-all": "^4.1.5",
@@ -35,6 +50,7 @@
     "ts-node": "^8.8.2",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0"
   }
 }
