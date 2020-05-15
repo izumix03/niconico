@@ -1,0 +1,19 @@
+{
+  "name": "niconico",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "cd server && npm run start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izumix03/niconico.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/izumix03/niconico/issues"
+  },
+  "homepage": "https://github.com/izumix03/niconico#readme"
+}
