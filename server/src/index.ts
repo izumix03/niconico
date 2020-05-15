@@ -2,6 +2,7 @@ import bodyParser from 'body-parser'
 import express from 'express'
 import * as http from 'http'
 import socketio from 'socket.io'
+import cors from 'cors'
 
 import { handleAction } from './routes/action_router'
 import { handleComment } from './routes/comment_router'
@@ -11,11 +12,7 @@ const server: http.Server = http.createServer(app)
 const io: socketio.Server = socketio(server)
 
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-  next()
-})
+app.use(cors())
 
 app.use(bodyParser.json())
 
@@ -30,4 +27,4 @@ io.on('connection', (socket) => {
   })
 })
 
-server.listen(80, () => console.log('listening on *:80'))
+server.listen(process.env.PORT || 80, () => console.log('listening on *:80'))
