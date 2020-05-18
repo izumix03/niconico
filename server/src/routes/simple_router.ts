@@ -11,10 +11,10 @@ export function handleRequest<T extends SingleValueProvider>(
 ) {
   try {
     console.log(`post ${resource} body: `, body)
-
-    io.emit('comment', body.value())
+    io.emit(resource, body.value())
     res.send('OK')
   } catch (e) {
+    console.error(e)
     res.status(500).send(e)
   }
 }

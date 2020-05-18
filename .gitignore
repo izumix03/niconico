@@ -1,3 +1,4 @@
 server/node_modules/
-extension/node_modules/
+nicox/node_modules/
+niconicomeet/node_modules/
 .DS_Store
