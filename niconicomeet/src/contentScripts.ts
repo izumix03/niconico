@@ -4,6 +4,9 @@ import { Message } from './models/message'
 import { DisplayedDiv } from './models/displayDiv';
 import axiosBase from 'axios';
 
+/**
+ * 通信用インスタンス
+ */
 const axios = axiosBase.create({
   baseURL: Config.SERVER_URL,
   headers: {
@@ -13,22 +16,31 @@ const axios = axiosBase.create({
   responseType: 'json'
 })
 
+/**
+ * タブ単位のニコニコ風エクステンションイベントハンドラー
+ */
 class NicoNico {
   private socket?: SocketIOClient.Socket = undefined
-  private lastPass?: string
+  private readonly lastPass: string
 
   constructor() {
+    this.lastPass = location.href.split('/').pop()?.split('?').shift()!
     this.setBackGroundListener()
   }
 
-  configure(url: string) {
+  /***
+   * 初期起動時処理
+   */
+  configure() {
     console.log('configure!!')
     this.checkEnabled().then((enabled) => {
-      this.lastPass = url.split('/').pop()?.split('?').shift()
       enabled ? this.setup() : this.disconnect()
     })
   }
 
+  /**
+   * niconicomeetが有効かどうか判定
+   */
   private async checkEnabled(): Promise<boolean> {
     return new Promise((resolve) => {
       chrome.runtime.sendMessage({
@@ -39,29 +51,39 @@ class NicoNico {
     })
   }
 
+  /**
+   * アクティブになった時の初期処理
+   */
   private setup() {
-    this.setListener()
     this.connect()
+    this.addClickEventToChatOpenButton()
+    this.addEventsToChatComponent()
   }
 
+  /**
+   * web socket接続する
+   */
   private connect() {
     if (this.socket) return
 
-    console.log(Config.SERVER_URL + `/id-${this.lastPass}`)
     this.socket = io.connect(Config.SERVER_URL + `/${this.lastPass}`, { 'forceNew': true })
     this.socket.on('comment', NicoNico.handleComment)
-    console.log(`niconico: connect to ${Config.SERVER_URL}`)
   }
 
+  /**
+   * web socket接続を切る
+   */
   private disconnect() {
     if (!this.socket) return
 
     this.socket.disconnect()
     this.socket = undefined
-
-    console.log(`niconico: disconnect from ${Config.SERVER_URL}`)
   }
 
+  /**
+   * 受け取ったメッセージの表示処理
+   * @param msg
+   */
   private static handleComment(msg: Message) {
     console.dir(msg)
     const color = msg.color || '#000000'
@@ -73,31 +95,39 @@ class NicoNico {
       .animate(msg.duration)
   }
 
-  private setListener() {
+  /**
+   * チャット画面を開くボタンのクリックイベント設定
+   */
+  private addClickEventToChatOpenButton() {
     const chatButton = document.querySelector('[aria-label="他の参加者とチャット"]')
-    chatButton?.removeEventListener('click', this.setupInput.bind(this))
-    chatButton?.addEventListener('click', this.setupInput.bind(this))
+    chatButton?.removeEventListener('click', this.addEventsToChatComponent.bind(this))
+    chatButton?.addEventListener('click', this.addEventsToChatComponent.bind(this))
   }
 
-  private setupInput() {
+  /**
+   * チャット画面のイベント設定
+   */
+  private addEventsToChatComponent() {
     const button = document.querySelector('[data-tooltip="メッセージを送信"]')
-    if (!button) {
-      console.log('failed to find button')
-    }
     button?.removeEventListener('mouseup', this.postMessage.bind(this))
     button?.addEventListener('mouseup', this.postMessage.bind(this), true)
-    NicoNico.getInput()?.addEventListener('keydown', this.pressEnterKey.bind(this), true)
-
-    console.log('success to setup!!')
+    NicoNico.getInput()?.addEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
   }
 
-  private pressEnterKey(e: KeyboardEvent) {
+  /**
+   * チャット画面でEnterを押して確定した際のイベント
+   * @param e
+   */
+  private postMessageIfKeydownEnterKey(e: KeyboardEvent) {
     if (e.keyCode !== 13) {
       return false
     }
     this.postMessage()
   }
 
+  /**に送る
+
+   * チャット画面で入力中の内容をニコニコ風サーバ   */
   private postMessage() {
     console.log('postMessage')
     const inputEls = document.getElementsByName('chatTextInput')
@@ -116,6 +146,10 @@ class NicoNico {
     console.log('posted')
   }
 
+  /**
+   * チャット 画面の input 要素を取得する
+   * ※チャット 画面が開く度に変わる
+   */
   private static getInput(): HTMLTextAreaElement | undefined {
     const inputEls = document.getElementsByName('chatTextInput')
     if (!inputEls || inputEls.length !== 1) {
@@ -125,11 +159,14 @@ class NicoNico {
     return (<HTMLTextAreaElement>inputEls[0])
   }
 
+  /**
+   * アイコンクリック時のイベントをback groundから受け取る
+   */
   private setBackGroundListener() {
     chrome.runtime.onMessage.addListener((req, sender, res) => {
       console.log('listen!!', req)
       if (req.message === 'update') {
-        this.configure(req.url)
+        this.configure()
         res()
         return true
       }
@@ -137,4 +174,4 @@ class NicoNico {
   }
 }
 
-new NicoNico()
+new NicoNico().configure()

@@ -40,7 +40,7 @@ class BackGround {
     const detailIcons = this.enabled ? details : disabledDetails
     chrome.browserAction.setIcon(detailIcons)
 
-    chrome.tabs.sendMessage(tab.id || 1, { message: 'update', url: tab.url })
+    chrome.tabs.sendMessage(tab.id || 1, { message: 'update' })
     // TODO: considering other tab
   }
 }
