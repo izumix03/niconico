@@ -1,13 +1,13 @@
 import { Response } from 'express'
 import socketio from 'socket.io'
 
-import { SingleValueProvider } from '../models/requests'
+import {  SingleValueProvider } from '../models/requests'
 
 export function handleRequest<T extends SingleValueProvider>(
   body: T,
   resource: string,
   res: Response,
-  io: socketio.Server,
+  io: SocketIO.Namespace,
 ) {
   try {
     console.log(`post ${resource} body: `, body)

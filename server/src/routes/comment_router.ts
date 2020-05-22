@@ -5,5 +5,5 @@ import { CommentRequest } from '../models/requests'
 import { handleRequest } from './simple_router'
 
 export function handleComment(req: Request, res: Response, io: socketio.Server) {
-  handleRequest<CommentRequest>(new CommentRequest(req.body.comment), 'comment', res, io)
+  handleRequest<CommentRequest>(new CommentRequest(req.body.comment), 'comment', res, io.of(`/${req.query.id as string}`))
 }

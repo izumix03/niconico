@@ -19,7 +19,7 @@ app.use(bodyParser.json())
 app.post('/action', (req, res) => handleAction(req, res, io))
 app.post('/comment', (req, res) => handleComment(req, res, io))
 
-io.on('connection', (socket) => {
+io.of(/^\/.*$/).on('connection', (socket) => {
   console.log('connected: ' + socket.request.connection.remoteAddress)
 
   socket.on('disconnect', function () {

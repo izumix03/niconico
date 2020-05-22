@@ -1,3 +1,5 @@
+import Tab = chrome.tabs.Tab;
+
 const details = {
   path: {
     '19': 'icon19.png',
@@ -20,9 +22,9 @@ class BackGround {
   }
 
   configure() {
-    chrome.browserAction.onClicked.addListener(() => {
+    chrome.browserAction.onClicked.addListener((tab) => {
       this.enabled = !this.enabled
-      this.update()
+      this.update(tab)
     })
 
     chrome.runtime.onMessage.addListener((req, sender, res) => {
@@ -33,11 +35,12 @@ class BackGround {
     })
   }
 
-  private update() {
+  private update(tab: Tab) {
     chrome.storage.sync.set({ enabled: this.enabled })
     const detailIcons = this.enabled ? details : disabledDetails
     chrome.browserAction.setIcon(detailIcons)
 
+    chrome.tabs.sendMessage(tab.id || 1, { message: 'update', url: tab.url })
     // TODO: considering other tab
   }
 }

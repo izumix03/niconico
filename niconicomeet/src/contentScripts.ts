@@ -1,12 +1,31 @@
 import { Config } from './config'
 import * as io from 'socket.io-client';
+import { Message } from './models/message'
+import { DisplayedDiv } from './models/displayDiv';
+import axiosBase from 'axios';
+
+const axios = axiosBase.create({
+  baseURL: Config.SERVER_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
+  },
+  responseType: 'json'
+})
 
 class NicoNico {
   private socket?: SocketIOClient.Socket = undefined
+  private lastPass?: string
 
-  configure() {
+  constructor() {
+    this.setBackGroundListener()
+  }
+
+  configure(url: string) {
+    console.log('configure!!')
     this.checkEnabled().then((enabled) => {
-      enabled ? this.connect() : this.disconnect()
+      this.lastPass = url.split('/').pop()?.split('?').shift()
+      enabled ? this.setup() : this.disconnect()
     })
   }
 
@@ -20,10 +39,16 @@ class NicoNico {
     })
   }
 
+  private setup() {
+    this.setListener()
+    this.connect()
+  }
+
   private connect() {
     if (this.socket) return
 
-    this.socket = io.connect(Config.SERVER_URL, { 'forceNew': true })
+    console.log(Config.SERVER_URL + `/id-${this.lastPass}`)
+    this.socket = io.connect(Config.SERVER_URL + `/${this.lastPass}`, { 'forceNew': true })
     this.socket.on('comment', NicoNico.handleComment)
     console.log(`niconico: connect to ${Config.SERVER_URL}`)
   }
@@ -37,7 +62,7 @@ class NicoNico {
     console.log(`niconico: disconnect from ${Config.SERVER_URL}`)
   }
 
-  private static handleComment(msg: Msg) {
+  private static handleComment(msg: Message) {
     console.dir(msg)
     const color = msg.color || '#000000'
     const shadow = msg.shadow || '#ffffff'
@@ -47,60 +72,69 @@ class NicoNico {
       .append()
       .animate(msg.duration)
   }
-}
 
-interface Msg {
-  comment: string
-  duration?: number
-  color?: string
-  shadow?: string
-  size?: number
-}
-
-class DisplayedDiv {
-  private readonly div: HTMLDivElement
-
-  constructor(body: string, size: number, color: string, shadow: string) {
-    this.div = document.createElement('div')
-    this.div.style.position = 'fixed'
-    this.div.style.left = window.innerWidth + 'px'
-    this.div.style.top = DisplayedDiv.random(window.innerHeight - 40) + 'px'
-    this.div.style.fontSize = size + 'pt'
-    this.div.style.fontWeight = 'bold'
-    this.div.style.color = color
-    this.div.style.textShadow = `-2px -2px 0px ${shadow}, -2px 2px 0px ${shadow}, 2px -2px 0px ${shadow}, 2px 2px 0px ${shadow}`
-    this.div.style.whiteSpace = 'pre'
-    this.div.style.zIndex = '2147483647'
-    this.div.innerText = body
+  private setListener() {
+    const chatButton = document.querySelector('[aria-label="他の参加者とチャット"]')
+    chatButton?.removeEventListener('click', this.setupInput.bind(this))
+    chatButton?.addEventListener('click', this.setupInput.bind(this))
   }
 
-  append(): DisplayedDiv {
-    document.body.appendChild(this.div)
-    return this
+  private setupInput() {
+    const button = document.querySelector('[data-tooltip="メッセージを送信"]')
+    if (!button) {
+      console.log('failed to find button')
+    }
+    button?.removeEventListener('mouseup', this.postMessage.bind(this))
+    button?.addEventListener('mouseup', this.postMessage.bind(this), true)
+    NicoNico.getInput()?.addEventListener('keydown', this.pressEnterKey.bind(this), true)
+
+    console.log('success to setup!!')
   }
 
-  animate(duration?: number) {
-    const effect = [{
-      left: window.innerWidth + 'px'
-    }, {
-      left: -this.div.offsetWidth + 'px'
-    }]
+  private pressEnterKey(e: KeyboardEvent) {
+    if (e.keyCode !== 13) {
+      return false
+    }
+    this.postMessage()
+  }
 
-    const timing = {
-      duration: (duration || 2000) * (window.innerWidth + this.div.offsetWidth) / window.innerWidth,
-      iterations: 1,
-      easing: 'linear'
+  private postMessage() {
+    console.log('postMessage')
+    const inputEls = document.getElementsByName('chatTextInput')
+    if (!inputEls || inputEls.length !== 1) {
+      return
     }
 
-    this.div.style.top = DisplayedDiv.random(window.innerHeight - this.div.offsetHeight) + 'px'
-    this.div.animate(effect, timing).onfinish = () => {
-      document.body.removeChild(this.div)
-    }
+    const text = NicoNico.getInput()?.value
+    console.log(text)
+    if (!text) return
+
+
+    axios.post(`/comment?id=${this.lastPass}`, {
+      comment: text
+    })
+    console.log('posted')
   }
 
-  private static random(value: number) {
-    return Math.floor(value * Math.random())
+  private static getInput(): HTMLTextAreaElement | undefined {
+    const inputEls = document.getElementsByName('chatTextInput')
+    if (!inputEls || inputEls.length !== 1) {
+      return undefined
+    }
+
+    return (<HTMLTextAreaElement>inputEls[0])
+  }
+
+  private setBackGroundListener() {
+    chrome.runtime.onMessage.addListener((req, sender, res) => {
+      console.log('listen!!', req)
+      if (req.message === 'update') {
+        this.configure(req.url)
+        res()
+        return true
+      }
+    })
   }
 }
 
-new NicoNico().configure()
+new NicoNico()
