@@ -111,7 +111,7 @@ class NicoNico {
     const button = document.querySelector('[data-tooltip="メッセージを送信"]')
     button?.removeEventListener('mouseup', this.postMessage.bind(this))
     button?.addEventListener('mouseup', this.postMessage.bind(this), true)
-    NicoNico.getInput()?.addEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
+    NicoNico.getChatInputElement()?.addEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
   }
 
   /**
@@ -135,7 +135,7 @@ class NicoNico {
       return
     }
 
-    const text = NicoNico.getInput()?.value
+    const text = NicoNico.getChatInputElement()?.value
     console.log(text)
     if (!text) return
 
@@ -150,7 +150,7 @@ class NicoNico {
    * チャット 画面の input 要素を取得する
    * ※チャット 画面が開く度に変わる
    */
-  private static getInput(): HTMLTextAreaElement | undefined {
+  private static getChatInputElement(): HTMLTextAreaElement | undefined {
     const inputEls = document.getElementsByName('chatTextInput')
     if (!inputEls || inputEls.length !== 1) {
       return undefined
