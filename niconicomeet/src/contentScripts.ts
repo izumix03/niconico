@@ -22,6 +22,7 @@ const axios = axiosBase.create({
 class NicoNico {
   private socket?: SocketIOClient.Socket = undefined
   private readonly lastPass: string
+  private finishSetUp = false
 
   constructor() {
     this.lastPass = location.href.split('/').pop()?.split('?').shift()!
@@ -32,9 +33,8 @@ class NicoNico {
    * 初期起動時処理
    */
   configure() {
-    console.log('configure!!')
     this.checkEnabled().then((enabled) => {
-      enabled ? this.setup() : this.disconnect()
+      enabled ? this.setUp() : this.disconnect()
     })
   }
 
@@ -54,10 +54,15 @@ class NicoNico {
   /**
    * アクティブになった時の初期処理
    */
-  private setup() {
+  private setUp() {
     this.connect()
-    this.addClickEventToChatOpenButton()
-    this.addEventsToChatComponent()
+
+    if (this.finishSetUp) return
+
+    let result = this.addClickEventToChatOpenButton()
+    this.finishSetUp = result || this.onEventsToChatComponent()
+
+    if (!result) setTimeout(this.setUp.bind(this), 5000)
   }
 
   /**
@@ -96,22 +101,33 @@ class NicoNico {
   }
 
   /**
-   * チャット画面を開くボタンのクリックイベント設定
+   * チャット画面を開くボタンのクリックイベント追加
    */
-  private addClickEventToChatOpenButton() {
+  private addClickEventToChatOpenButton(): boolean {
     const chatButton = document.querySelector('[aria-label="他の参加者とチャット"]')
-    chatButton?.removeEventListener('click', this.addEventsToChatComponent.bind(this))
-    chatButton?.addEventListener('click', this.addEventsToChatComponent.bind(this))
+
+    if (!chatButton) return false
+
+    chatButton.removeEventListener('click', this.onEventsToChatComponent.bind(this))
+    chatButton.addEventListener('click', this.onEventsToChatComponent.bind(this))
+    return true
   }
 
   /**
-   * チャット画面のイベント設定
+   * チャット画面のイベント
    */
-  private addEventsToChatComponent() {
+  private onEventsToChatComponent(): boolean {
     const button = document.querySelector('[data-tooltip="メッセージを送信"]')
-    button?.removeEventListener('mouseup', this.postMessage.bind(this))
+    button?.removeEventListener('mouseup', this.postMessage.bind(this), true)
     button?.addEventListener('mouseup', this.postMessage.bind(this), true)
-    NicoNico.getChatInputElement()?.addEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
+
+    const inputEl = NicoNico.getChatInputElement()
+
+    if (!button || !inputEl) return false
+
+    inputEl.removeEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
+    inputEl.addEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
+    return true
   }
 
   /**
@@ -129,21 +145,18 @@ class NicoNico {
 
    * チャット画面で入力中の内容をニコニコ風サーバ   */
   private postMessage() {
-    console.log('postMessage')
     const inputEls = document.getElementsByName('chatTextInput')
     if (!inputEls || inputEls.length !== 1) {
       return
     }
 
     const text = NicoNico.getChatInputElement()?.value
-    console.log(text)
     if (!text) return
 
 
     axios.post(`/comment?id=${this.lastPass}`, {
       comment: text
     })
-    console.log('posted')
   }
 
   /**
@@ -164,7 +177,6 @@ class NicoNico {
    */
   private setBackGroundListener() {
     chrome.runtime.onMessage.addListener((req, sender, res) => {
-      console.log('listen!!', req)
       if (req.message === 'update') {
         this.configure()
         res()

@@ -10,7 +10,6 @@ export function handleRequest<T extends SingleValueProvider>(
   io: SocketIO.Namespace,
 ) {
   try {
-    console.log(`post ${resource} body: `, body)
     io.emit(resource, body.value())
     res.send('OK')
   } catch (e) {
