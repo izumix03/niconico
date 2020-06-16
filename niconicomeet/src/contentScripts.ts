@@ -90,7 +90,6 @@ class NicoNico {
    * @param msg
    */
   private static handleComment(msg: Message) {
-    console.dir(msg)
     const color = msg.color || '#000000'
     const shadow = msg.shadow || '#ffffff'
     const size = msg.size || 56
@@ -104,11 +103,10 @@ class NicoNico {
    * チャット画面を開くボタンのクリックイベント追加
    */
   private addClickEventToChatOpenButton(): boolean {
-    const chatButton = document.querySelector('[aria-label="他の参加者とチャット"]')
+    const chatButton = document.querySelector('[aria-label="全員とチャット"]')
 
     if (!chatButton) return false
 
-    chatButton.removeEventListener('click', this.onEventsToChatComponent.bind(this))
     chatButton.addEventListener('click', this.onEventsToChatComponent.bind(this))
     return true
   }
@@ -118,14 +116,12 @@ class NicoNico {
    */
   private onEventsToChatComponent(): boolean {
     const button = document.querySelector('[data-tooltip="メッセージを送信"]')
-    button?.removeEventListener('mouseup', this.postMessage.bind(this), true)
     button?.addEventListener('mouseup', this.postMessage.bind(this), true)
 
     const inputEl = NicoNico.getChatInputElement()
 
     if (!button || !inputEl) return false
 
-    inputEl.removeEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
     inputEl.addEventListener('keydown', this.postMessageIfKeydownEnterKey.bind(this), true)
     return true
   }
