@@ -1,17 +1,17 @@
-import Tab = chrome.tabs.Tab;
+import Tab = chrome.tabs.Tab
 
 const details = {
   path: {
     '19': 'icon19.png',
-    '38': 'icon38.png'
-  }
+    '38': 'icon38.png',
+  },
 }
 
 const disabledDetails = {
   path: {
     '19': 'icon19_disabled.png',
-    '38': 'icon38_disabled.png'
-  }
+    '38': 'icon38_disabled.png',
+  },
 }
 
 class BackGround {
