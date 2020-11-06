@@ -3,7 +3,7 @@
     "target": "es2018",
     "module": "commonjs",
     "lib": ["esnext", "dom"],
-    "types": ["node", "jest", "chrome"],
+    "types": ["jest", "chrome"],
     "strict": true,
     "importHelpers": true,
     "experimentalDecorators": true,

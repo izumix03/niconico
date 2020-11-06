@@ -6,6 +6,7 @@ export const config: ConfigurationFactory = () => {
   return {
     entry: {
       popup: path.join(__dirname, 'src', 'popup.ts'),
+      /* eslint-disable @typescript-eslint/camelcase */
       content_scripts: path.join(__dirname, 'src', 'contentScripts.ts'),
       background: path.join(__dirname, 'src', 'backGround.ts'),
     },

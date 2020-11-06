@@ -1,3 +1,4 @@
+
 ## niconico extension
 
 ## build
@@ -10,6 +11,8 @@ npm run build
 
 open chrome://extensions/
 open dist directory
+
+click an icon in google meet page
 
 ## debug
 

@@ -21,16 +21,20 @@ export class DisplayedDiv {
   }
 
   animate(duration?: number) {
-    const effect = [{
-      left: window.innerWidth + 'px'
-    }, {
-      left: -this.div.offsetWidth + 'px'
-    }]
+    const effect = [
+      {
+        left: window.innerWidth + 'px',
+      },
+      {
+        left: -this.div.offsetWidth + 'px',
+      },
+    ]
 
     const timing = {
-      duration: (duration || 2000) * (window.innerWidth + this.div.offsetWidth) / window.innerWidth,
+      duration:
+        ((duration || 2000) * (window.innerWidth + this.div.offsetWidth)) / window.innerWidth,
       iterations: 1,
-      easing: 'linear'
+      easing: 'linear',
     }
 
     this.div.style.top = DisplayedDiv.random(window.innerHeight - this.div.offsetHeight) + 'px'

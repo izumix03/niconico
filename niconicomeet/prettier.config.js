@@ -8,7 +8,7 @@ module.exports = {
       files: '*.{md,yml}',
       options: {
         printWidth: 80,
-        semi: true,
+        semi: false,
         singleQuote: false,
         trailingComma: 'none',
       },
