@@ -45,6 +45,6 @@
     "cors": "2.8.5",
     "eslint-plugin-import": "2.20.2",
     "express": "4.17.1",
-    "socket.io": "2.3.0"
+    "socket.io": "2.5.0"
   }
 }
